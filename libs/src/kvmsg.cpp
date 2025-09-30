@@ -2,7 +2,7 @@
 // Created by linhdh on 24/09/2025.
 //
 
-#include "../include/kvmsg.hpp"
+#include "kvmsg.hpp"
 
 KVMsg::KVMsg(int64_t sequence) {
     sequence_ = sequence;
@@ -10,11 +10,11 @@ KVMsg::KVMsg(int64_t sequence) {
 }
 
 KVMsg::~KVMsg() {
-    std::cout << "DEBUG: freeing key=" << key_ << std::endl;
+    //std::cout << "DEBUG: freeing key=" << key_ << std::endl;
 }
 
 KVMsg::KVMsg(const KVMsg &other) {
-    std::cout << "copy construct\n";
+    //std::cout << "copy construct\n";
     key_ = other.key_;
     sequence_ = other.sequence_;
     uuid_ = other.uuid_;
@@ -26,7 +26,7 @@ KVMsg::KVMsg(const KVMsg &other) {
 }
 
 KVMsg& KVMsg::operator=(const KVMsg &other) {
-    std::cout << "copy assign\n";
+    //std::cout << "copy assign\n";
     key_ = other.key_;
     sequence_ = other.sequence_;
     uuid_ = other.uuid_;

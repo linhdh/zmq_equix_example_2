@@ -2,7 +2,7 @@
 // Created by linhdh on 25/09/2025.
 //
 
-#include "../include/clone.hpp"
+#include "clone.hpp"
 
 // Implementations
 
@@ -13,7 +13,7 @@
 
 clone_t::clone_t() {
     ctx = new zmqpp::context_t();
-    actor = new zmqpp::actor(std::bind(&clone_t::clone_agent, this, std::placeholders::_1, ctx));
+    actor = new zmqpp::actor([this](auto && PH1) { return clone_agent(std::forward<decltype(PH1)>(PH1), ctx); });
 }
 
 clone_t::~clone_t() {
@@ -123,7 +123,7 @@ int agent_t::agent_control_message() {
     pipe->receive(msg);
     std::string command;
     msg >> command;
-    std::cout << "I: agent_control_message: " << command << std::endl;
+    //std::cout << "I: agent_control_message: " << command << std::endl;
     if (command == "") {
         return -1; // Interrupted
     }
@@ -235,7 +235,7 @@ bool clone_t::clone_agent(zmqpp::socket_t *pipe, zmqpp::context_t *ctx) {
                 if (kvmsg) {
                     if (kvmsg->key() == "KTHXBAI") {
                         agent->sequence = kvmsg->sequence();
-                        std::cout << "I: recieved from " << server->address << ":" << server->port << " snapshot=" << agent->sequence << std::endl;
+                        //std::cout << "I: recieved from " << server->address << ":" << server->port << " snapshot=" << agent->sequence << std::endl;
                         delete kvmsg;
                         agent->state = STATE_ACTIVE;
                     } else {
@@ -252,7 +252,7 @@ bool clone_t::clone_agent(zmqpp::socket_t *pipe, zmqpp::context_t *ctx) {
                     if (kvmsg->sequence() > agent->sequence) {
                         agent->sequence = kvmsg->sequence();
                         kvmsg->store(agent->kvmap);
-                        std::cout << "I: recieved from " << server->address << ":" << server->port << " update=" << kvmsg->sequence() << std::endl;
+                        //std::cout << "I: recieved from " << server->address << ":" << server->port << " update=" << kvmsg->sequence() << std::endl;
                     } else {
                         delete kvmsg;
                     }

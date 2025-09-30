@@ -164,7 +164,7 @@ static bool s_collector(clonesrv_t *self) {
     if (self->active) {
         kvmsg->set_sequence(++self->sequence);
         kvmsg->send(*self->publisher);
-        std::string ttl_second_str = kvmsg->property("ttl");
+        const std::string ttl_second_str = kvmsg->property("ttl");
         if (!ttl_second_str.empty()) {
             int ttl_second = std::atoi(ttl_second_str.c_str());
             auto now = std::chrono::high_resolution_clock::now();
@@ -172,15 +172,15 @@ static bool s_collector(clonesrv_t *self) {
             kvmsg->set_property("ttl", "%lld", expired_at);
         }
         kvmsg->store(*self->kvmap);
-        std::cout << "I: publishing update=" << self->sequence << std::endl;
+        //std::cout << "I: publishing update=" << self->sequence << std::endl;
     } else {
         //  If we already got message from active, drop it, else
         //  hold on pending list
         if (s_was_pending(self, kvmsg)) {
-            // std::cout << "DEBUG: already got from active server, drop it" << std::endl;
+            //std::cout << "DEBUG: already got from active server, drop it" << std::endl;
             delete kvmsg;
         } else {
-            // std::cout << "DEBUG: hold client request on pending list" << std::endl;
+            //std::cout << "DEBUG: hold client request on pending list" << std::endl;
             self->pending.push_back(kvmsg);
         }
     }
@@ -207,7 +207,7 @@ static bool s_flush_ttl(clonesrv_t *self) {
                 kvmsg->set_body(ustring());
                 kvmsg->send(*self->publisher);
                 it = self->kvmap->erase(it);
-                std::cout << "I: publishing delete=" << self->sequence << std::endl;
+                //std::cout << "I: publishing delete=" << self->sequence << std::endl;
             } else {
                 ++it;
             }
@@ -313,7 +313,7 @@ static bool s_subscriber(clonesrv_t *self) {
         if (kvmsg->sequence() > self->sequence) {
             self->sequence = kvmsg->sequence();
             kvmsg->store(*self->kvmap);
-            std::cout << "I: received update=" << self->sequence << std::endl;
+            //std::cout << "I: received update=" << self->sequence << std::endl;
         } else {
             delete kvmsg;
         }

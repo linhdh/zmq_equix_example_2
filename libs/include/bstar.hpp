@@ -107,13 +107,13 @@ public:
         //  ACTIVE or PASSIVE depending on events we get from our peer:
         if (m_state == STATE_PRIMARY) {
             if (m_event == PEER_BACKUP) {
-                std::cout << "I: connected to backup (passive), ready active" << std::endl;
+                //std::cout << "I: connected to backup (passive), ready active" << std::endl;
                 m_state = STATE_ACTIVE;
                 if (active_fn) {
                     active_fn(loop, nullptr, active_arg);
                 }
             } else if (m_event == PEER_ACTIVE) {
-                std::cout << "I: connected to backup (active), ready passive" << std::endl;
+                //std::cout << "I: connected to backup (active), ready passive" << std::endl;
                 m_state = STATE_PASSIVE;
                 if (passive_fn) {
                     passive_fn(loop, nullptr, passive_arg);
@@ -122,7 +122,7 @@ public:
             //  Accept client connections
         } else if (m_state == STATE_BACKUP) {
             if (m_event == PEER_ACTIVE) {
-                std::cout << "I: connected to primary (active), ready passive" << std::endl;
+                //std::cout << "I: connected to primary (active), ready passive" << std::endl;
                 m_state = STATE_PASSIVE;
                 if (passive_fn) {
                     passive_fn(loop, nullptr, passive_arg);
@@ -143,15 +143,15 @@ public:
         } else if (m_state == STATE_PASSIVE) {
             if (m_event == PEER_PRIMARY) {
                 //  Peer is restarting - become active, peer will go passive
-                std::cout << "I: primary (passive) is restarting, ready active" << std::endl;
+                //std::cout << "I: primary (passive) is restarting, ready active" << std::endl;
                 m_state = STATE_ACTIVE;
             } else if (m_event == PEER_BACKUP) {
                 //  Peer is restarting - become active, peer will go passive
-                std::cout << "I: backup (passive) is restarting, ready active" << std::endl;
+                //std::cout << "I: backup (passive) is restarting, ready active" << std::endl;
                 m_state = STATE_ACTIVE;
             } else if (m_event == PEER_PASSIVE) {
                 //  Two passives would mean cluster would be non-responsive
-                std::cout << "E: fatal error - dual passives, aborting" << std::endl;
+                //std::cout << "E: fatal error - dual passives, aborting" << std::endl;
                 exception = true;
             } else if (m_event == CLIENT_REQUEST) {
                 //  Peer becomes active if timeout has passed
@@ -159,7 +159,7 @@ public:
                 assert(m_peer_expiry > 0);
                 auto now = std::chrono::system_clock::now();
                 if (std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() >= m_peer_expiry) {
-                    std::cout << "I: failover successful, ready active" << std::endl;
+                    //std::cout << "I: failover successful, ready active" << std::endl;
                     m_state = STATE_ACTIVE;
                 } else {
                     //  If peer is alive, reject connections
@@ -181,7 +181,7 @@ public:
     static bool s_send_state(bstar_t *self) {
         zmqpp::message_t msg;
         msg << static_cast<int>(self->m_state);
-        std::cout << "I: publishing state " << self->m_state << std::endl;
+        //std::cout << "I: publishing state " << self->m_state << std::endl;
         self->statepub->send(msg);
         return true;
     }

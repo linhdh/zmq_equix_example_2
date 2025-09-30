@@ -5,9 +5,9 @@
 #ifndef ZMQ_EQUIX_EXAMPLE_2_PUBCLI6_HPP
 #define ZMQ_EQUIX_EXAMPLE_2_PUBCLI6_HPP
 
+#include "clone.hpp"
 
-class pubcli6 {
-};
+std::string SUBTREE="/client/";
 
 
 #endif //ZMQ_EQUIX_EXAMPLE_2_PUBCLI6_HPP

@@ -8,13 +8,15 @@ add_subdirectory(libs)
 
 add_executable(clonesrv6
         src/clonesrv6.cpp)
-target_link_libraries(clonesrv6 zmq zmqpp bstar clone kvmsg)
+target_link_libraries(clonesrv6 zmq zmqpp bstar kvmsg)
 target_include_directories(clonesrv6 PRIVATE include)
 
 add_executable(pubcli6
         src/pubcli6.cpp)
 target_include_directories(pubcli6 PRIVATE include)
+target_link_libraries(pubcli6 zmq clone kvmsg)
 
 add_executable(subcli6
         src/subcli6.cpp)
 target_include_directories(subcli6 PRIVATE include)
+target_link_libraries(subcli6 zmq zmqpp clone kvmsg)
