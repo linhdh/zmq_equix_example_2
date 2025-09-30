@@ -30,5 +30,5 @@ int main(int argc, char *argv[]) {
     double rate = count / elapsed;
     std::cout << "[PUBCLI6] Sent " << count << "/" << TARGET_MESSAGES << " (" << rate << " msg/s) in " << elapsed << " second(s)." << std::endl;
     std::cout << "[PUBCLI6] Completed sending " << count << " messages" << std::endl;
-    delete clone_client;
+    //delete clone_client;
 }
