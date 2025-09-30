@@ -14,44 +14,44 @@
 //  servers. Ports 5556/5566 are used to receive voting events (snapshot
 //  requests in the clone pattern). Ports 5557/5567 are used by the
 //  publisher, and ports 5558/5568 are used by the collector:
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     auto *self = new clonesrv_t();
     if (argc == 2 && strcmp(argv[1], "-p") == 0) {
-        std::cout << "I: Primary active, waiting for backup (passive)" << std::endl;
+        cout << "I: Primary active, waiting for backup (passive)" << endl;
         self->bstar = new bstar_t(true, "tcp://*:5003", "tcp://localhost:5004");
-        self->bstar->register_voter("tcp://*:5556", zmqpp::socket_type::router, s_snapshot, self);
+        self->bstar->register_voter("tcp://*:5556", socket_type::router, s_snapshot, self);
         self->port = 5556;
         self->peer = 5566;
         self->primary = true;
     } else if (argc == 2 && strcmp(argv[1], "-b") == 0) {
-        std::cout << "I: Backup passive, waiting for primary (active)" << std::endl;
+        cout << "I: Backup passive, waiting for primary (active)" << endl;
         self->bstar = new bstar_t(false, "tcp://*:5004", "tcp://localhost:5003");
-        self->bstar->register_voter("tcp://*:5566", zmqpp::socket_type::router, s_snapshot, self);
+        self->bstar->register_voter("tcp://*:5566", socket_type::router, s_snapshot, self);
         self->port = 5566;
         self->peer = 5556;
         self->primary = false;
     } else {
-        std::cout << "Usage: clonesrv6 { -p | -b }" << std::endl;
+        cout << "Usage: clonesrv6 { -p | -b }" << endl;
         delete self;
         return 0;
     }
 
     if (self->primary) {
-        self->kvmap = new std::unordered_map<std::string, KVMsg*>();
+        self->kvmap = new unordered_map<string, KVMsg*>();
     }
-    self->ctx = new zmqpp::context_t();
+    self->ctx = new context_t();
 
     // set up our clone server sockets
-    self->publisher = new zmqpp::socket_t(*self->ctx, zmqpp::socket_type::pub);
-    self->publisher->bind("tcp://*:" + std::to_string(self->port + 1));
-    self->collector = new zmqpp::socket_t(*self->ctx, zmqpp::socket_type::sub);
+    self->publisher = new socket_t(*self->ctx, socket_type::pub);
+    self->publisher->bind("tcp://*:" + to_string(self->port + 1));
+    self->collector = new socket_t(*self->ctx, socket_type::sub);
     self->collector->subscribe("");
-    self->collector->bind("tcp://*:" + std::to_string(self->port + 2)); // allow multiple clients publish updates
+    self->collector->bind("tcp://*:" + to_string(self->port + 2)); // allow multiple clients publish updates
 
     // set up our own clone client interface to peer
-    self->subscriber = new zmqpp::socket_t(*self->ctx, zmqpp::socket_type::sub);
+    self->subscriber = new socket_t(*self->ctx, socket_type::sub);
     self->subscriber->subscribe("");
-    self->subscriber->connect("tcp://localhost:" + std::to_string(self->peer + 1));
+    self->subscriber->connect("tcp://localhost:" + to_string(self->peer + 1));
 
     //  .split main task body
     //  After we've setup our sockets, we register our binary star
@@ -64,9 +64,9 @@ int main(int argc, char *argv[]) {
     self->bstar->set_new_passive(s_new_passive, self);
 
     // Register our other handlers with the bstar reactor
-    self->bstar->get_loop()->add(*self->collector, std::bind(s_collector, self));
-    self->bstar->get_loop()->add(std::chrono::milliseconds(1000), 0, std::bind(s_flush_ttl, self));
-    self->bstar->get_loop()->add(std::chrono::milliseconds(1000), 0, std::bind(s_send_hugz, self));
+    self->bstar->get_loop()->add(*self->collector, [self] { return s_collector(self); });
+    self->bstar->get_loop()->add(chrono::milliseconds(1000), 0, [self] { return s_flush_ttl(self); });
+    self->bstar->get_loop()->add(chrono::milliseconds(1000), 0, [self] { return s_send_hugz(self); });
 
     s_catch_signals();
     auto end_loop = []() -> bool {
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
     try {
         self->bstar->start();
     } catch (const std::exception &e) {
-        std::cerr << "Exception: " << e.what() << std::endl;
+        cerr << "Exception: " << e.what() << endl;
     }
 
     // Clean up
@@ -90,14 +90,14 @@ int main(int argc, char *argv[]) {
 
 //  Routing information for a key-value snapshot
 typedef struct {
-    zmqpp::socket_t *socket; //  ROUTER socket to send to
-    std::string identity; //  Identity of peer who requested state
-    std::string subtree; //  Client subtree specification
+    socket_t *socket; //  ROUTER socket to send to
+    string identity; //  Identity of peer who requested state
+    string subtree; //  Client subtree specification
 } kvroute_t;
 
 
 static void s_snapshot(zmqpp::loop *loop, zmqpp::socket_t *socket, void *arg) {
-    auto *self = static_cast<clonesrv_t *>(arg);
+    const auto *self = static_cast<clonesrv_t *>(arg);
 
     zmqpp::message frames;
     if (!socket->receive(frames)) {
@@ -119,7 +119,7 @@ static void s_snapshot(zmqpp::loop *loop, zmqpp::socket_t *socket, void *arg) {
     kvroute_t routing = {socket, identity, subtree};
     for (auto &kv : *self->kvmap) {
         if (subtree.size() <= kv.first.size() && kv.first.compare(0, subtree.size(), subtree) == 0) {
-            zmqpp::message_t frames;
+            message_t frames;
             frames << identity;
             kv.second->encode_frames(frames);
             routing.socket->send(frames);
