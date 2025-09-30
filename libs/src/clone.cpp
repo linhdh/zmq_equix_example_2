@@ -112,7 +112,9 @@ agent_t::~agent_t() {
     for (uint server_nbr = 0; server_nbr < nbr_servers; server_nbr++) {
         delete servers[server_nbr];
     }
-    KVMsg::clear_kvmap(kvmap);
+    if (!this->kvmap.empty()) {
+        KVMsg::clear_kvmap(kvmap);
+    }
 }
 
 //  .split handling a control message
@@ -145,7 +147,7 @@ int agent_t::agent_control_message() {
         std::string key, value;
         int ttl;
         msg >> key >> value >> ttl;
-        KVMsg *kvmsg = new KVMsg(0);
+        auto *kvmsg = new KVMsg(0);
         kvmsg->set_key(key);
         kvmsg->set_uuid();
         kvmsg->fmt_body("%s", value.c_str());
