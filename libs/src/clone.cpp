@@ -112,6 +112,7 @@ agent_t::~agent_t() {
     for (uint server_nbr = 0; server_nbr < nbr_servers; server_nbr++) {
         delete servers[server_nbr];
     }
+    KVMsg::clear_kvmap(kvmap);
 }
 
 //  .split handling a control message
